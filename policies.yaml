@@ -1,0 +1,7 @@
+rules:
+  - name: LockScreenOnHighRisk
+    condition: "risk_level == 'High'"
+    actions: ["show_alert", "log_event"]
+  - name: LogMediumRisk
+    condition: "risk_level == 'Medium'"
+    actions: ["log_event"]

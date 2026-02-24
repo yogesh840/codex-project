@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>HID Guardian</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+  <h1>HID Guardian</h1>
+  <div class="card mb-3"><div class="card-body">
+    <h5>User Registration & Baseline Capture</h5>
+    <div class="input-group mb-2"><input id="username" class="form-control" placeholder="username"/><button class="btn btn-primary" onclick="startBaseline()">Capture Baseline</button></div>
+    <small class="text-muted">Type the sentence 3 times and move/click mouse for ~15s after pressing capture.</small>
+    <pre id="baselineStatus" class="mt-2"></pre>
+  </div></div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card"><div class="card-body">
+        <h5>Current Risk</h5>
+        <div id="score" class="display-5">0.00</div>
+        <div id="level" class="badge bg-success">Low</div>
+        <p id="explain" class="mt-2 text-muted"></p>
+      </div></div>
+    </div>
+    <div class="col-md-8">
+      <div class="card"><div class="card-body">
+        <h5>Recent Alerts</h5>
+        <table class="table table-sm" id="alerts"><thead><tr><th>Time</th><th>User</th><th>Risk</th><th>Reason</th></tr></thead><tbody></tbody></table>
+      </div></div>
+    </div>
+  </div>
+  <div class="row g-3 mt-2">
+    <div class="col-md-6"><div class="card"><div class="card-body">
+      <h5>Connected HID Devices</h5>
+      <ul id="devices"></ul>
+    </div></div></div>
+    <div class="col-md-6"><div class="card"><div class="card-body">
+      <h5>Quick Actions</h5>
+      <button class="btn btn-danger" onclick="simulate()">Simulate Robotic Attack</button>
+    </div></div></div>
+  </div>
+</div>
+<script>
+
+let baselineKeys=[], baselineCursor=[];
+function trackBaseline(){
+  const pressed={};
+  const onDown=(e)=>{ pressed[e.key]=performance.now()/1000; };
+  const onUp=(e)=>{ const t=performance.now()/1000; const p=pressed[e.key]||t; baselineKeys.push({key:e.key, pressed_at:p, released_at:t}); };
+  const onMove=(e)=> baselineCursor.push({x:e.clientX, y:e.clientY, timestamp:performance.now()/1000, event_type:'move'});
+  const onClick=(e)=> baselineCursor.push({x:e.clientX, y:e.clientY, timestamp:performance.now()/1000, event_type:'click'});
+  window.addEventListener('keydown', onDown); window.addEventListener('keyup', onUp); window.addEventListener('mousemove', onMove); window.addEventListener('click', onClick);
+  setTimeout(()=>{window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); window.removeEventListener('mousemove', onMove); window.removeEventListener('click', onClick); sendBaseline();}, 15000);
+}
+async function startBaseline(){
+  baselineKeys=[]; baselineCursor=[];
+  document.getElementById('baselineStatus').innerText='Capture started: type "The quick brown fox jumps over the lazy dog" 3 times and move/click mouse.';
+  trackBaseline();
+}
+async function sendBaseline(){
+  const username=document.getElementById('username').value || 'anonymous';
+  const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username, keystrokes:baselineKeys, cursor_events:baselineCursor})}).then(r=>r.json());
+  document.getElementById('baselineStatus').innerText=JSON.stringify(res, null, 2);
+}
+
+async function refresh(){
+  const risk = await fetch('/risk/current').then(r=>r.json());
+  document.getElementById('score').innerText = Number(risk.risk_score || 0).toFixed(2);
+  const level = document.getElementById('level');
+  level.innerText = risk.risk_level || 'Low';
+  level.className = 'badge ' + (risk.risk_level==='High'?'bg-danger':risk.risk_level==='Medium'?'bg-warning text-dark':'bg-success');
+  document.getElementById('explain').innerText = risk.explanation || '';
+
+  const alerts = await fetch('/alerts/recent').then(r=>r.json());
+  document.querySelector('#alerts tbody').innerHTML = alerts.map(a => `<tr><td>${a.ts}</td><td>${a.username}</td><td>${a.risk_level} (${Number(a.risk_score).toFixed(2)})</td><td>${a.explanation}</td></tr>`).join('');
+
+  const devices = await fetch('/devices').then(r=>r.json());
+  document.getElementById('devices').innerHTML = devices.connected.map(d => `<li>${d.product} ${d.vid}:${d.pid} - ${d.trusted?'trusted':'untrusted'}</li>`).join('');
+}
+async function simulate(){ await fetch('/simulate/robot', {method:'POST'}); }
+setInterval(refresh, 1500); refresh();
+</script>
+</body></html>
