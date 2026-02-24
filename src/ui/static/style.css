@@ -1,0 +1,45 @@
+:root {
+  --bg-main: #1a1a2e;
+  --bg-elev: #232340;
+  --text-main: #eaf6ff;
+  --accent: #00d4ff;
+  --safe: #00ff88;
+  --warn: #ffd166;
+  --danger: #ff4444;
+}
+body {
+  font-family: Inter, sans-serif;
+  background: radial-gradient(circle at top right, #25284c, var(--bg-main));
+  color: var(--text-main);
+  min-height: 100vh;
+}
+.top-nav { background: rgba(10, 14, 28, 0.95); border-bottom: 1px solid #2f3965; }
+.nav-link { color: #c5d9ff; }
+.nav-link.active, .nav-link:hover { color: var(--accent); }
+.app-shell { display: flex; min-height: calc(100vh - 60px); }
+.left-panel { width: 250px; border-right: 1px solid #2f3965; }
+.content-panel { flex: 1; }
+.glass-card, .hero-card, .chart-card {
+  background: linear-gradient(135deg, rgba(37,45,81,.95), rgba(19,24,46,.95));
+  border: 1px solid #35457a;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, .25);
+}
+.small-label { font-size: .82rem; text-transform: uppercase; opacity: .75; letter-spacing: .08em; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--safe); display: inline-block; margin-right: 8px; box-shadow: 0 0 8px var(--safe); }
+.btn-cyber { background: linear-gradient(90deg, #00a6ff, #00d4ff); border: 0; color: #001122; font-weight: 700; }
+.btn-cyber:hover { filter: brightness(1.1); }
+.risk-level-text { font-weight: 800; letter-spacing: .06em; }
+.mono { font-family: "Roboto Mono", monospace; }
+.gauge-wrap { position: relative; display: inline-block; }
+.gauge-text { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: 800; }
+.table-dark { --bs-table-bg: #151b33; --bs-table-striped-bg: #1c2340; --bs-table-hover-bg: #253056; }
+.sev-low { background: rgba(0,255,136,.2); color: var(--safe); }
+.sev-medium { background: rgba(255,209,102,.2); color: var(--warn); }
+.sev-high { background: rgba(255,68,68,.2); color: var(--danger); }
+.toast-host { position: fixed; right: 18px; top: 78px; z-index: 1000; }
+.alert-toast { background: #11182d; border-left: 4px solid var(--warn); padding: .8rem 1rem; border-radius: 8px; margin-bottom: .6rem; animation: slideIn .4s ease; }
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.typing-target { background: #11182d; border: 1px solid #2f3965; padding: .8rem; border-radius: 8px; }
+.mouse-pad { min-height: 150px; border: 1px dashed #6ba6ff; border-radius: 10px; padding: 1rem; background: rgba(0, 212, 255, 0.07); }
