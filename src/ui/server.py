@@ -4,6 +4,7 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import asdict
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -115,8 +116,15 @@ class Runtime:
 
 runtime = Runtime()
 app = FastAPI(title="HID Guardian")
-app.mount("/static", StaticFiles(directory="src/ui/static"), name="static")
-templates = Jinja2Templates(directory="src/ui/templates")
+UI_DIR = Path(__file__).resolve().parent
+STATIC_DIR = UI_DIR / "static"
+TEMPLATES_DIR = UI_DIR / "templates"
+
+# Ensure static path exists even on clones where empty directories were dropped.
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 @app.on_event("startup")
